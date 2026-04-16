@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -251,7 +252,15 @@
     <!-- ==================== 搜索/发现视图 ==================== -->
     <main id="view-search" class="view-section flex-1 overflow-y-auto pb-40 bg-white relative z-10">
         <!-- Search Header -->
-        <div class="sticky top-0 z-40 bg-white border-b border-gray-100 p-4">
+        <div class="sticky top-0 z-40 bg-white border-b border-gray-100 px-4 pt-4 pb-3">
+            <div class="flex items-center justify-between mb-3">
+                <button onclick="goToHome()" class="inline-flex items-center gap-1.5 text-sm text-gray-600 active:scale-95 transition-transform">
+                    <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                    返回首页
+                </button>
+                <h2 class="text-sm font-semibold text-gray-900">全部品种</h2>
+                <div class="w-[88px]"></div>
+            </div>
             <div class="relative flex items-center">
                 <i data-lucide="search" class="absolute left-3 text-gray-400 w-[18px] h-[18px]"></i>
                 <input
@@ -295,12 +304,28 @@
     </main>
 
     <!-- ==================== 底部分享 ==================== -->
-    <div class="fixed bottom-0 left-1/2 z-40 w-full max-w-md -translate-x-1/2 px-4 pb-safe-bottom">
-        <div class="rounded-t-2xl bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-[0_-5px_20px_-5px_rgba(0,0,0,0.1)] px-4 py-3">
-            <button onclick="handleSharePage()" id="share-btn" class="w-full h-11 bg-blue-600 text-white rounded-lg flex items-center justify-center gap-2 font-medium transition-all active:scale-95 text-sm">
-                <i data-lucide="share-2" class="w-4 h-4"></i>
-                分享基差功能
+    <div class="fixed bottom-0 left-0 w-full z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-[0_-5px_20px_-5px_rgba(0,0,0,0.1)] pb-safe-bottom">
+        <div class="max-w-md mx-auto px-4 py-3 flex gap-3 md:gap-4 items-center">
+            <button
+                onclick="handleSharePage()"
+                id="share-btn"
+                style="display: none; background: #111827; color: #f5c86a; border: 1px solid rgba(245, 200, 106, 0.5);"
+                class="flex-1 h-11 rounded-lg flex items-center justify-center gap-2 font-medium transition-all active:scale-95 text-sm md:text-base hover:brightness-110"
+            >
+                <i data-lucide="share-2" class="w-4 h-4 md:w-5 md:h-5"></i>
+                分享专题
             </button>
+
+            <a
+                id="download-btn"
+                href="https://qihuo.jin10.com/app/index.html"
+                target="_blank"
+                class="flex-1 h-11 rounded-lg flex flex-col items-center justify-center font-bold shadow-lg active:scale-95 transition-all hover:brightness-110 text-decoration-none leading-none"
+                style="background: linear-gradient(90deg, #d39b1f 0%, #f5c86a 50%, #d39b1f 100%); color: #111827; box-shadow: 0 10px 18px rgba(245, 200, 106, 0.18);"
+            >
+                <span class="text-sm md:text-base">下载金十期货APP</span>
+                <span class="text-[10px] md:text-xs font-normal opacity-80 scale-90">获取基差异动信息</span>
+            </a>
         </div>
     </div>
 
@@ -548,6 +573,129 @@
             switchView('detail');
         }
 
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (!modal) return;
+            modal.classList.remove('modal-hidden');
+            requestAnimationFrame(() => {
+                modal.classList.add('modal-visible');
+            });
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (!modal) return;
+            modal.classList.remove('modal-visible');
+            setTimeout(() => {
+                modal.classList.add('modal-hidden');
+                document.body.style.overflow = '';
+            }, 300);
+        }
+
+        function handleSharePage() {
+            if (typeof window.Jin10JSBridge !== 'undefined') {
+                try {
+                    const bridge = new window.Jin10JSBridge();
+                    if (bridge.isApp) {
+                        bridge.dispatch('appShare', { url: location.href });
+                    }
+                } catch (e) {
+                    // Ignore bridge errors silently.
+                }
+            }
+        }
+
+        function initAppEnvironment() {
+            const downloadBtn = document.getElementById('download-btn');
+            const shareBtn = document.querySelector('button[onclick*="handleSharePage"]');
+
+            if (typeof window.Jin10JSBridge !== 'undefined') {
+                try {
+                    const bridge = new window.Jin10JSBridge();
+
+                    if (bridge.isApp) {
+                        if (shareBtn) {
+                            shareBtn.style.display = '';
+                        }
+                        if (downloadBtn) {
+                            downloadBtn.style.display = 'none';
+                        }
+                        if (shareBtn && downloadBtn && downloadBtn.style.display === 'none') {
+                            shareBtn.classList.remove('flex-1');
+                            shareBtn.classList.add('w-full');
+                        }
+                    } else {
+                        if (downloadBtn) {
+                            downloadBtn.classList.remove('flex-1');
+                            downloadBtn.classList.add('w-full');
+                        }
+                    }
+                } catch (e) {
+                    if (downloadBtn) {
+                        downloadBtn.classList.remove('flex-1');
+                        downloadBtn.classList.add('w-full');
+                    }
+                }
+            } else {
+                if (downloadBtn) {
+                    downloadBtn.classList.remove('flex-1');
+                    downloadBtn.classList.add('w-full');
+                }
+            }
+
+            if (shareBtn && downloadBtn &&
+                shareBtn.style.display !== 'none' &&
+                downloadBtn.style.display !== 'none') {
+                if (!shareBtn.classList.contains('flex-1')) {
+                    shareBtn.classList.add('flex-1');
+                    shareBtn.classList.remove('w-full');
+                }
+                if (!downloadBtn.classList.contains('flex-1')) {
+                    downloadBtn.classList.add('flex-1');
+                    downloadBtn.classList.remove('w-full');
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', initAppEnvironment);
+
+        function handleArticleLink(event) {
+            event.preventDefault();
+            const url = event.currentTarget.href;
+
+            if (typeof window.Jin10JSBridge !== 'undefined') {
+                try {
+                    const bridge = new window.Jin10JSBridge();
+
+                    if (bridge.isApp) {
+                        bridge.dispatch('openAppWebViewWithNav', { url: url });
+                    } else {
+                        if (window.innerWidth > 768) {
+                            window.open(url, '_blank');
+                        } else {
+                            window.location.href = url;
+                        }
+                    }
+                } catch (e) {
+                    window.location.href = url;
+                }
+            } else {
+                if (window.innerWidth > 768) {
+                    window.open(url, '_blank');
+                } else {
+                    window.location.href = url;
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const externalLinks = document.querySelectorAll('a[href^="http"]');
+            externalLinks.forEach((link) => {
+                link.addEventListener('click', handleArticleLink);
+            });
+        });
+
         function renderHomeList() {
             let data = [...mockData];
             if (currentTab === 'widening') {
@@ -560,34 +708,43 @@
                 data = data.filter(d => d.premiumRate < 0).sort((a, b) => a.premiumRate - b.premiumRate);
             }
 
-            const html = data.slice(0, 5).map(item => `
+            const rankColorClasses = ['text-red-400', 'text-orange-400', 'text-orange-300', 'text-gray-400', 'text-gray-300'];
+            const html = data.slice(0, 5).map((item, index) => {
+                const rank = String(index + 1).padStart(2, '0');
+                const rankClass = rankColorClasses[index] || 'text-gray-300';
+                return `
                 <div class="p-4 active:bg-gray-50 transition-colors cursor-pointer" onclick="goToDetail('${item.id}')">
-                    <div class="flex justify-between items-start mb-2">
-                        <div class="flex items-center space-x-2">
-                            <span class="font-semibold text-gray-900">${item.name}</span>
-                            <span class="text-[10px] px-1.5 py-0.5 rounded-sm ${getBgColorClass(item.basisChange)}">${item.statusTag}</span>
-                        </div>
-                        <div class="text-right">
-                            <div class="text-sm font-medium text-gray-900">${formatNumber(item.basis)}</div>
-                            <div class="text-xs text-gray-400">主力基差</div>
-                        </div>
-                    </div>
-                    <div class="flex justify-between text-xs mt-3">
-                        <div>
-                            <span class="text-gray-500">日变动: </span>
-                            <span class="${getColorClass(item.basisChange)}">${formatSignedValue(item.basisChange)}</span>
-                        </div>
-                        <div>
-                            <span class="text-gray-500">升贴水: </span>
-                            <span class="${getColorClass(item.premiumRate)}">${formatPercent(item.premiumRate)}</span>
-                        </div>
-                        <div>
-                            <span class="text-gray-500">现货变动: </span>
-                            <span class="${getColorClass(item.spotChange)}">${formatSignedValue(item.spotChange)}</span>
+                    <div class="flex items-start gap-3">
+                        <div class="min-w-[20px] pt-0.5 text-sm font-semibold font-mono leading-none tracking-tight ${rankClass}">${rank}</div>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-start mb-2">
+                                <div class="flex items-center space-x-2">
+                                    <span class="font-semibold text-gray-900">${item.name}</span>
+                                    <span class="text-[10px] px-1.5 py-0.5 rounded-sm ${getBgColorClass(item.basisChange)}">${item.statusTag}</span>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-sm font-medium text-gray-900">${formatNumber(item.basis)}</div>
+                                    <div class="text-xs text-gray-400">主力基差</div>
+                                </div>
+                            </div>
+                            <div class="flex justify-between text-xs mt-3">
+                                <div>
+                                    <span class="text-gray-500">日变动: </span>
+                                    <span class="${getColorClass(item.basisChange)}">${formatSignedValue(item.basisChange)}</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500">升贴水: </span>
+                                    <span class="${getColorClass(item.premiumRate)}">${formatPercent(item.premiumRate)}</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500">现货变动: </span>
+                                    <span class="${getColorClass(item.spotChange)}">${formatSignedValue(item.spotChange)}</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
 
             document.getElementById('home-list').innerHTML = html;
         }
