@@ -1,0 +1,9 @@
+{
+  "target_date_mode": "yesterday",
+  "history_days": 90,
+  "workspace_html": "/Users/anders/Documents/Playground/basis.html",
+  "output_html": "/Users/anders/Downloads/zip (2)/basis.html",
+  "data_json": "/tmp/jin10_basis_latest.json",
+  "fetch_script": "/Users/anders/Documents/Playground/jin10_basis_fetch.py",
+  "rebuild_script": "/Users/anders/Documents/Playground/rebuild_basis_html.py"
+}
